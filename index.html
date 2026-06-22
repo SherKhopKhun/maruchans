@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <!-- ═══════════════════════════════════════════════════════════
+       MARUCHAN COOLING — Ley del Enfriamiento de Newton
+       Template: index.html
+       Backend: Flask (Python)
+       Frontend: Vanilla JS + Chart.js + MathJax
+       ═══════════════════════════════════════════════════════════ -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO -->
+  <title>Maruchan Cooling — Ley del Enfriamiento de Newton</title>
+  <meta name="description" content="Aprende la Ley del Enfriamiento de Newton a través de una historia épica de supervivencia universitaria y ecuaciones diferenciales separables." />
+
+  <!-- Favicon emoji -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍜</text></svg>" />
+
+  <!-- ── Google Fonts ─────────────────────────────────────────── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet" />
+
+  <!-- ── CSS ──────────────────────────────────────────────────── -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+
+  <!-- ── MathJax (LaTeX rendering) ────────────────────────────── -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        tags: 'ams',
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      },
+      startup: {
+        ready() {
+          MathJax.startup.defaultReady();
+          // Cuando MathJax termina, anima las ecuaciones
+          MathJax.startup.promise.then(() => {
+            document.querySelectorAll('.mjx-chtml').forEach(el => {
+              el.style.animation = 'fadeInUp 0.5s ease';
+            });
+          });
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+
+  <!-- ── Chart.js ─────────────────────────────────────────────── -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+  <!-- ════════════════════════════════════════════════════════════
+       HEADER / NAVBAR FIJA
+       ════════════════════════════════════════════════════════════ -->
+  <header class="site-header" id="site-header">
+    <a href="#" class="logo">
+      <div class="logo-icon">🍜</div>
+      <span class="logo-text">Maruchan<span>.cooling</span></span>
+    </a>
+    <span class="nav-badge">EDO · Newton's Law</span>
+  </header>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       HERO — La Historia Comienza
+       ════════════════════════════════════════════════════════════ -->
+  <section class="hero" id="hero">
+    <div class="hero-bg">
+      <!-- Orbes de luz de fondo -->
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
+    <div class="hero-content">
+      <!-- Texto hero -->
+      <div class="hero-left">
+        <div class="hero-eyebrow">
+          📐 Ecuaciones Diferenciales · Ing. en Sistemas
+        </div>
+
+        <h1 class="hero-title">
+          El Dilema<br/>
+          <span class="highlight">Térmico</span> del<br/>
+          <span class="highlight-amber">Ingeniero</span> Hambriento
+        </h1>
+
+        <p class="hero-subtitle">
+          Son las 2 AM. El deadline es en 3 horas. La Maruchan hirviendo
+          te mira a los ojos. La matemática tiene la respuesta —
+          <strong>¿cuántos minutos esperas?</strong>
+        </p>
+
+        <div class="hero-actions">
+          <button class="btn btn-primary" data-scroll-to="tab-simulacion" id="hero-cta">
+            🧮 Ver Simulación
+          </button>
+          <button class="btn btn-outline" data-scroll-to="tab-math" id="hero-math">
+            📐 Ver la Matemática
+          </button>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-value">100°C</span>
+            <span class="stat-label">Temperatura inicial</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">55°C</span>
+            <span class="stat-label">Temperatura ideal</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">EDO</span>
+            <span class="stat-label">Separable</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Imagen hero generada por IA -->
+      <div class="hero-right">
+        <div class="hero-image-wrapper">
+          <img
+            src="{{ url_for('static', filename='images/student_hero.png') }}"
+            alt="Estudiante de ingeniería exhausto a las 2AM con su Maruchan hirviendo"
+            id="hero-img"
+          />
+          <div class="hero-image-badge">
+            <span class="badge-temp" id="badge-live-temp">100°C</span>
+            <div>
+              <div class="badge-text" style="font-size:0.75rem;font-weight:600;">🌡 Temperatura actual</div>
+              <div class="badge-text" style="font-size:0.7rem;color:var(--text-muted);">Maruchan recién preparada</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       STORY SECTION — Narrativa envolvente
+       ════════════════════════════════════════════════════════════ -->
+  <section class="section" id="historia">
+    <div class="section-inner">
+      <p class="section-label reveal">// El Contexto</p>
+      <h2 class="section-title reveal reveal-delay-1">
+        Una Historia de <span class="text-teal">Supervivencia</span><br/>
+        Universitaria y Física Térmica
+      </h2>
+
+      <!-- Grid de tarjetas narrativas -->
+      <div class="story-grid">
+        <div class="story-card reveal reveal-delay-1">
+          <span class="story-card-icon">🌙</span>
+          <h3>2:47 AM — La Desesperación</h3>
+          <p>
+            Aarón lleva <strong>6 horas</strong> frente a la pantalla. El compilador
+            no perdona: <code style="color:var(--neon-red);font-family:var(--font-mono)">Segmentation fault (core dumped)</code>.
+            El examen es en 5 horas. El estómago ruge louder que el fan de la laptop.
+          </p>
+        </div>
+
+        <div class="story-card reveal reveal-delay-2">
+          <span class="story-card-icon">🍜</span>
+          <h3>La Solución Instantánea</h3>
+          <p>
+            La Maruchan de pollo. La salvación en un vaso de unicel. El microondas
+            pita. El vapor sube. La temperatura del agua es exactamente
+            <strong class="text-amber">100°C</strong> — pero la lengua dice que no.
+          </p>
+        </div>
+
+        <div class="story-card reveal reveal-delay-1">
+          <span class="story-card-icon">🔥</span>
+          <h3>El Problema de Vida o Muerte</h3>
+          <p>
+            Comerla ahorita: <strong class="text-teal">quemadura garantizada</strong>.
+            Esperarla demasiado: <strong style="color:var(--neon-purple)">sopa fría, amargura infinita</strong>.
+            Existe una ventana perfecta — y la física sabe exactamente cuándo es.
+          </p>
+        </div>
+
+        <div class="story-card reveal reveal-delay-2">
+          <span class="story-card-icon">📐</span>
+          <h3>Newton al Rescate</h3>
+          <p>
+            Isaac Newton, en el siglo XVII, formuló que la <strong>tasa de cambio de temperatura</strong>
+            es proporcional a la diferencia entre el objeto y el ambiente.
+            Una ecuación diferencial separable que Aarón puede resolver.
+          </p>
+        </div>
+      </div>
+
+      <!-- Bloque narrativo inmersivo -->
+      <div class="narrative-block reveal">
+        <div class="quote-mark">"</div>
+        <p class="narrative-text">
+          Aarón la miró. Ahí estaba, humeante, tentadora, inalcanzable. Sus dedos
+          tecleaban sin parar pero su mente ya calculaba: <em>si la temperatura del cuarto
+          es <span class="highlight-m">25°C</span> y la sopa empieza a
+          <span class="highlight-t">100°C</span>...</em> Abrió un nuevo archivo Python.
+          No para el proyecto, sino para <strong>calcular el momento exacto en que
+          podría comer sin destruirse las papilas gustativas.</strong>
+          <br/><br/>
+          Escribió: <code style="color:var(--neon-teal);font-family:var(--font-mono);font-style:normal">
+          dT/dt = -k(T - Tm)</code>. La Ley del Enfriamiento de Newton.
+          Lo que parecía un problema culinario era, en realidad,
+          <strong>una ecuación diferencial ordinaria separable</strong> de primer orden.
+        </p>
+      </div>
+
+      <!-- Escena animada de la Maruchan -->
+      <div class="maruchan-scene reveal">
+        <div class="cup-container">
+          <!-- Steam animado -->
+          <div class="steam">
+            <div class="steam-line"></div>
+            <div class="steam-line"></div>
+            <div class="steam-line"></div>
+            <div class="steam-line"></div>
+            <div class="steam-line"></div>
+          </div>
+
+          <!-- El vaso/taza -->
+          <div class="cup-body"></div>
+
+          <!-- Pulse ring -->
+          <div class="cup-pulse"></div>
+
+          <!-- Termómetro lateral -->
+          <div class="cup-thermometer">
+            <div class="thermo-bar">
+              <div class="thermo-fill" style="height:95%"></div>
+            </div>
+            <span class="thermo-label">100°</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       RAMEN ART SECTION — Imagen AI + descripción
+       ════════════════════════════════════════════════════════════ -->
+  <section class="ramen-art-section">
+    <div class="ramen-art-inner">
+      <img
+        src="{{ url_for('static', filename='images/maruchan_art.png') }}"
+        alt="Arte de la Maruchan con vapores matemáticos"
+        class="ramen-art-img reveal"
+        onerror="this.style.display='none'"
+      />
+      <div class="ramen-art-content reveal reveal-delay-1">
+        <p class="section-label">// El Fenómeno Físico</p>
+        <h2>
+          El Vapor que<br/>
+          <span class="text-teal">Esconde Ecuaciones</span>
+        </h2>
+        <p>
+          Cada voluta de vapor que sube de la Maruchan es la visualización directa de
+          la transferencia de calor al ambiente. El calor fluye del cuerpo caliente al
+          medio frío — exactamente lo que Newton modeló matemáticamente.
+        </p>
+        <p>
+          La <strong>Ley del Enfriamiento de Newton</strong> establece que la
+          <strong class="text-amber">velocidad de pérdida de calor</strong>
+          es proporcional a la diferencia de temperatura entre el objeto y
+          el ambiente que lo rodea. Esta es una relación que produce una
+          <strong class="text-teal">ecuación diferencial separable</strong> de primer orden.
+        </p>
+        <div style="margin-top:1.5rem">
+          \[ \frac{dT}{dt} = -k(T - T_m) \]
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       TABS SECTION — Matemática + Simulación
+       ════════════════════════════════════════════════════════════ -->
+  <section class="tabs-section" id="tabs">
+    <div class="tabs-section-inner">
+
+      <!-- ── Tab Navigation ───────────────────────────────────── -->
+      <nav class="tabs-nav" role="tablist" aria-label="Secciones de la aplicación">
+        <button class="tab-btn active"
+                role="tab"
+                data-tab="tab-math"
+                id="btn-tab-math"
+                aria-selected="true"
+                aria-controls="tab-math">
+          <span class="tab-icon">📐</span>
+          Derivación Matemática
+        </button>
+        <button class="tab-btn"
+                role="tab"
+                data-tab="tab-simulacion"
+                id="btn-tab-sim"
+                aria-selected="false"
+                aria-controls="tab-simulacion">
+          <span class="tab-icon">🧮</span>
+          Simulación Interactiva
+        </button>
+        <button class="tab-btn"
+                role="tab"
+                data-tab="tab-resultado"
+                id="btn-tab-result"
+                aria-selected="false"
+                aria-controls="tab-resultado">
+          <span class="tab-icon">⏱️</span>
+          ¿Cuándo Comer?
+        </button>
+      </nav>
+
+
+      <!-- ══════════════════════════════════════════════════════
+           TAB 1: MATEMÁTICA — Derivación paso a paso
+           ══════════════════════════════════════════════════════ -->
+      <div class="tab-panel active" id="tab-math" role="tabpanel">
+
+        <!-- Ecuación hero central -->
+        <div class="math-hero reveal">
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:1rem;font-family:var(--font-mono)">
+            // Modelo matemático principal
+          </p>
+          <div class="math-hero-eq">
+            \[ \frac{dT}{dt} = -k\,(T - T_m) \]
+          </div>
+          <p style="color:var(--text-secondary);margin-top:1.5rem;font-size:0.9rem">
+            Ecuación Diferencial Ordinaria (EDO) de primer orden — <strong>separable</strong>
+          </p>
+        </div>
+
+        <!-- Pasos de derivación -->
+        <div class="steps-container">
+
+          <!-- PASO 0: El modelo físico -->
+          <div class="step-card reveal">
+            <div class="step-number">0</div>
+            <div class="step-content">
+              <h4>🧪 El Modelo Físico — Ley de Newton</h4>
+              <p>
+                Newton observó que la <strong>tasa de cambio de temperatura</strong> de un objeto
+                es proporcional a la diferencia entre su temperatura $T$ y la del ambiente $T_m$.
+                Si el objeto está más caliente que el medio, se enfría; si está más frío, se calienta.
+                La constante de proporcionalidad $k > 0$ caracteriza el material/sistema.
+              </p>
+              <div class="step-eq">
+                \[ \frac{dT}{dt} = -k\,(T - T_m), \quad k > 0 \]
+              </div>
+              <p style="margin-top:0.75rem">
+                El signo negativo indica que cuando $T > T_m$, la derivada $dT/dt$ es negativa
+                (temperatura <em>decrece</em>), que es físicamente correcto para el enfriamiento.
+              </p>
+            </div>
+          </div>
+
+          <!-- PASO 1: Separación de variables -->
+          <div class="step-card reveal reveal-delay-1">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4>✂️ Separación de Variables</h4>
+              <p>
+                Como es una EDO separable, podemos pasar todos los términos con $T$ al lado izquierdo
+                y todos los términos con $t$ al lado derecho. Dividimos ambos lados entre $(T - T_m)$
+                y multiplicamos por $dt$:
+              </p>
+              <div class="step-eq">
+                \[
+                  \frac{dT}{dt} = -k\,(T - T_m)
+                  \quad\Longrightarrow\quad
+                  \frac{dT}{T - T_m} = -k \, dt
+                \]
+              </div>
+              <p style="margin-top:0.75rem;color:var(--neon-teal);font-size:0.85rem">
+                ✅ Variables separadas: izquierda solo $T$, derecha solo $t$.
+              </p>
+            </div>
+          </div>
+
+          <!-- PASO 2: Integración -->
+          <div class="step-card reveal reveal-delay-2">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4>∫ Integración de Ambos Lados</h4>
+              <p>
+                Integramos lado izquierdo respecto a $T$ y el lado derecho respecto a $t$.
+                El integral de $\frac{1}{T-T_m}$ es el logaritmo natural:
+              </p>
+              <div class="step-eq">
+                \[
+                  \int \frac{dT}{T - T_m} = \int -k \, dt
+                  \quad\Longrightarrow\quad
+                  \ln|T - T_m| = -kt + C
+                \]
+              </div>
+              <p style="margin-top:0.75rem">
+                Donde $C$ es la constante de integración arbitraria que se determina con las
+                condiciones iniciales.
+              </p>
+            </div>
+          </div>
+
+          <!-- PASO 3: Exponenciación -->
+          <div class="step-card reveal reveal-delay-1">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4>🔢 Exponenciar para Despejar T</h4>
+              <p>
+                Aplicamos la función exponencial $e^{(\cdot)}$ a ambos lados para eliminar
+                el logaritmo y despejar $T$:
+              </p>
+              <div class="step-eq">
+                \[
+                  e^{\ln|T - T_m|} = e^{-kt + C}
+                  \quad\Longrightarrow\quad
+                  |T - T_m| = e^{C} \cdot e^{-kt}
+                \]
+              </div>
+              <p style="margin-top:0.75rem">
+                Renombramos $A = e^C$ (constante positiva arbitraria).
+                Como sabemos que $T > T_m$ físicamente (sopa más caliente que el cuarto),
+                podemos quitar el valor absoluto:
+              </p>
+              <div class="step-eq">
+                \[ T - T_m = A \cdot e^{-kt} \]
+              </div>
+            </div>
+          </div>
+
+          <!-- PASO 4: Condición Inicial -->
+          <div class="step-card reveal reveal-delay-2">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <h4>📍 Aplicar Condición Inicial: $T(0) = T_0$</h4>
+              <p>
+                En $t = 0$ la sopa tiene temperatura $T_0$ (la que recién sacamos del microondas).
+                Sustituyendo en la expresión anterior:
+              </p>
+              <div class="step-eq">
+                \[
+                  T(0) - T_m = A \cdot e^{-k \cdot 0}
+                  \quad\Longrightarrow\quad
+                  T_0 - T_m = A \cdot 1
+                  \quad\Longrightarrow\quad
+                  A = T_0 - T_m
+                \]
+              </div>
+              <p style="margin-top:0.75rem">
+                La constante $A$ queda completamente determinada por las condiciones del problema.
+              </p>
+            </div>
+          </div>
+
+          <!-- PASO 5: Solución General -->
+          <div class="step-card reveal">
+            <div class="step-number">5</div>
+            <div class="step-content">
+              <h4>🏆 Solución Analítica Final</h4>
+              <p>
+                Sustituyendo $A = T_0 - T_m$ en la ecuación obtenemos la solución general
+                con condición inicial:
+              </p>
+              <div class="step-eq">
+                \[
+                  \boxed{T(t) = T_m + (T_0 - T_m)\,e^{-kt}}
+                \]
+              </div>
+              <p style="margin-top:0.75rem;color:var(--neon-teal);font-size:0.85rem">
+                ✅ Esta función describe exactamente cómo baja la temperatura de la Maruchan
+                en el tiempo. Es continua, diferenciable y satisface la EDO original.
+              </p>
+            </div>
+          </div>
+
+          <!-- PASO 6: Invertir para encontrar t* -->
+          <div class="step-card reveal reveal-delay-1">
+            <div class="step-number">6</div>
+            <div class="step-content">
+              <h4>⏱️ Despejar el Tiempo Ideal $t^*$</h4>
+              <p>
+                ¿Cuándo exactamente la sopa llega a la temperatura ideal $T^*$ para comer?
+                Resolvemos para $t$ cuando $T(t) = T^*$:
+              </p>
+              <div class="step-eq">
+                \[
+                  T^* = T_m + (T_0 - T_m)\,e^{-kt^*}
+                  \quad\Longrightarrow\quad
+                  e^{-kt^*} = \frac{T^* - T_m}{T_0 - T_m}
+                \]
+                \[
+                  -kt^* = \ln\!\left(\frac{T^* - T_m}{T_0 - T_m}\right)
+                  \quad\Longrightarrow\quad
+                  \boxed{
+                    t^* = \frac{1}{k}\,\ln\!\left(\frac{T_0 - T_m}{T^* - T_m}\right)
+                  }
+                \]
+              </div>
+              <p style="margin-top:0.75rem;color:var(--neon-amber);font-size:0.85rem">
+                🍜 Esta es la fórmula que Aarón necesita. Con $T_0=100°C$, $T_m=25°C$,
+                $T^*=55°C$ y $k=0.04$ min⁻¹, obtenemos el momento exacto de la salvación.
+              </p>
+            </div>
+          </div>
+
+        </div><!-- /steps-container -->
+
+        <!-- Tabla de variables -->
+        <div class="var-table-wrap reveal" style="margin-top:2rem">
+          <div class="var-table-header">
+            📊 Glosario de Variables
+          </div>
+          <table class="var-table">
+            <thead>
+              <tr>
+                <th>Símbolo</th>
+                <th>Nombre</th>
+                <th>Unidad</th>
+                <th>Descripción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="var-symbol">T(t)</span></td>
+                <td>Temperatura en tiempo t</td>
+                <td>°C</td>
+                <td>Variable dependiente — lo que queremos conocer</td>
+              </tr>
+              <tr>
+                <td><span class="var-symbol">T₀</span></td>
+                <td>Temperatura inicial</td>
+                <td>°C</td>
+                <td>Temperatura de la sopa al momento de prepararla (100°C)</td>
+              </tr>
+              <tr>
+                <td><span class="var-symbol">Tₘ</span></td>
+                <td>Temperatura del medio</td>
+                <td>°C</td>
+                <td>Temperatura ambiente del cuarto (25°C)</td>
+              </tr>
+              <tr>
+                <td><span class="var-symbol">k</span></td>
+                <td>Constante de enfriamiento</td>
+                <td>min⁻¹</td>
+                <td>Qué tan rápido pierde calor el sistema (k > 0)</td>
+              </tr>
+              <tr>
+                <td><span class="var-symbol">t</span></td>
+                <td>Tiempo</td>
+                <td>min</td>
+                <td>Variable independiente</td>
+              </tr>
+              <tr>
+                <td><span class="var-symbol">t*</span></td>
+                <td>Tiempo ideal</td>
+                <td>min</td>
+                <td>Minuto exacto en que la sopa está perfecta para comer</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div><!-- /tab-math -->
+
+
+      <!-- ══════════════════════════════════════════════════════
+           TAB 2: SIMULACIÓN INTERACTIVA
+           ══════════════════════════════════════════════════════ -->
+      <div class="tab-panel" id="tab-simulacion" role="tabpanel">
+
+        <!-- Mensaje de error -->
+        <div id="error-message"
+             style="display:none;background:rgba(255,77,109,0.15);border:1px solid var(--neon-red);
+                    border-radius:var(--radius-md);padding:1rem 1.5rem;margin-bottom:1.5rem;
+                    color:var(--neon-red);font-size:0.9rem;">
+        </div>
+
+        <div class="sim-layout">
+
+          <!-- Panel de controles -->
+          <aside class="controls-panel">
+            <h3>⚙️ Parámetros del Sistema</h3>
+
+            <!-- T0 -->
+            <div class="control-group">
+              <div class="control-label">
+                <span class="control-label-text">Temperatura inicial <span class="mono text-teal">T₀</span></span>
+                <span class="control-value" id="val-t0">100°C</span>
+              </div>
+              <input type="range"
+                     id="slider-t0"
+                     min="60" max="100" step="1" value="100"
+                     aria-label="Temperatura inicial T0" />
+            </div>
+
+            <!-- Tm -->
+            <div class="control-group">
+              <div class="control-label">
+                <span class="control-label-text">Temperatura ambiente <span class="mono text-teal">Tₘ</span></span>
+                <span class="control-value" id="val-tm">25°C</span>
+              </div>
+              <input type="range"
+                     id="slider-tm"
+                     min="10" max="40" step="1" value="25"
+                     aria-label="Temperatura ambiente Tm" />
+            </div>
+
+            <!-- k -->
+            <div class="control-group">
+              <div class="control-label">
+                <span class="control-label-text">Constante de enfriamiento <span class="mono text-teal">k</span></span>
+                <span class="control-value" id="val-k">0.040</span>
+              </div>
+              <input type="range"
+                     id="slider-k"
+                     min="0.005" max="0.15" step="0.005" value="0.04"
+                     aria-label="Constante de enfriamiento k" />
+              <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:var(--text-muted);margin-top:4px">
+                <span>Lento</span><span>Rápido</span>
+              </div>
+            </div>
+
+            <div class="control-divider"></div>
+
+            <!-- T ideal -->
+            <div class="control-group">
+              <div class="control-label">
+                <span class="control-label-text">Temperatura ideal <span class="mono text-amber">T*</span></span>
+                <span class="control-value" id="val-t-ideal" style="color:var(--neon-amber)">55°C</span>
+              </div>
+              <input type="range"
+                     id="slider-t-ideal"
+                     min="35" max="75" step="1" value="55"
+                     aria-label="Temperatura ideal para comer" />
+              <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:var(--text-muted);margin-top:4px">
+                <span>🥶 Tibio</span><span>🔥 Caliente</span>
+              </div>
+            </div>
+
+            <div class="control-divider"></div>
+
+            <!-- Botón calcular -->
+            <button class="btn btn-primary btn-calculate" onclick="calculate()" id="calc-btn">
+              🧮 Calcular Curva
+            </button>
+
+            <!-- Info del modelo -->
+            <div style="margin-top:1.5rem;padding:1rem;background:rgba(0,245,212,0.05);
+                        border-radius:var(--radius-md);border:1px solid var(--border-dim)">
+              <p style="font-size:0.72rem;color:var(--text-muted);line-height:1.6">
+                📡 <strong style="color:var(--text-secondary)">Conexión Flask→Chart.js:</strong><br/>
+                Los parámetros se envían como JSON al endpoint
+                <code style="color:var(--neon-teal)">/api/calculate</code>.
+                Python resuelve $T(t)$ analíticamente y devuelve los puntos.
+                Chart.js los renderiza en tiempo real.
+              </p>
+            </div>
+          </aside>
+
+          <!-- Área del chart -->
+          <div class="chart-area">
+
+            <!-- Tarjetas de métricas -->
+            <div class="metrics-grid">
+              <div class="metric-card teal reveal">
+                <span class="metric-icon">🌡</span>
+                <div class="metric-value" id="metric-5min">—</div>
+                <div class="metric-label">A los 5 min</div>
+              </div>
+              <div class="metric-card amber reveal reveal-delay-1">
+                <span class="metric-icon">☕</span>
+                <div class="metric-value" id="metric-10min">—</div>
+                <div class="metric-label">A los 10 min</div>
+              </div>
+              <div class="metric-card purple reveal reveal-delay-2">
+                <span class="metric-icon">🍵</span>
+                <div class="metric-value" id="metric-15min">—</div>
+                <div class="metric-label">A los 15 min</div>
+              </div>
+              <div class="metric-card red reveal reveal-delay-1">
+                <span class="metric-icon">⏱</span>
+                <div class="metric-value" id="metric-ideal">—</div>
+                <div class="metric-label">Tiempo ideal t*</div>
+              </div>
+            </div>
+
+            <!-- Gráfica principal -->
+            <div class="chart-card reveal">
+              <div class="chart-card-header">
+                <div>
+                  <div class="chart-card-title">Curva de Enfriamiento — $T(t)$ vs $t$</div>
+                  <div class="chart-card-subtitle">
+                    Solución analítica: $T(t) = T_m + (T_0 - T_m)\,e^{-kt}$
+                  </div>
+                </div>
+                <span style="font-size:0.75rem;color:var(--text-muted);font-family:var(--font-mono)">
+                  vía Flask API
+                </span>
+              </div>
+
+              <div class="chart-wrapper" style="position:relative">
+                <!-- Overlay de carga -->
+                <div class="loading-overlay">
+                  <div class="spinner"></div>
+                </div>
+                <canvas id="cooling-chart" aria-label="Curva de enfriamiento de Newton" role="img"></canvas>
+              </div>
+            </div>
+
+          </div><!-- /chart-area -->
+        </div><!-- /sim-layout -->
+      </div><!-- /tab-simulacion -->
+
+
+      <!-- ══════════════════════════════════════════════════════
+           TAB 3: ¿CUÁNDO COMER?
+           ══════════════════════════════════════════════════════ -->
+      <div class="tab-panel" id="tab-resultado" role="tabpanel">
+
+        <div style="max-width:700px;margin:0 auto">
+
+          <!-- Resultado destacado -->
+          <div class="result-spotlight reveal">
+            <span class="result-spotlight-icon">🍜</span>
+            <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.5rem;
+                        font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.1em">
+              Aarón puede comer en exactamente
+            </div>
+            <div class="result-time">
+              <span id="result-time-value">0.00</span>
+              <span class="result-time-unit">minutos</span>
+            </div>
+            <p class="result-subtitle">
+              Temperatura perfecta: <strong class="text-amber" id="result-ideal-temp">55°C</strong>
+              — sin quemarse, sin que se enfríe.
+            </p>
+            <div class="result-eq" id="result-equation">
+              t* = (1/k) · ln((T₀ - Tₘ) / (T* - Tₘ))
+            </div>
+          </div>
+
+          <!-- Narrativa del desenlace -->
+          <div class="narrative-block reveal" style="margin-top:2.5rem">
+            <div class="quote-mark">"</div>
+            <p class="narrative-text">
+              Aarón levantó la vista de la pantalla. El timer de su teléfono sonó.
+              Con calma científica —y el estómago rugiendo en anticipación—, tomó los palillos.
+              <strong>La temperatura era perfecta.</strong> No quemaba. No estaba fría.
+              Era exactamente $T^* =$ <span class="highlight-t" id="story-t-ideal">55°C</span>.
+              <br/><br/>
+              Mientras sorbía el primer noodle caliente, sonrió. <em>¿Quién dijo que
+              las ecuaciones diferenciales no tenían aplicaciones prácticas?</em>
+              La Ley del Enfriamiento de Newton acababa de salvarle las papilas gustativas —
+              y quizás también el examen.
+            </p>
+          </div>
+
+          <!-- Proceso de verificación -->
+          <div class="step-card reveal" style="margin-top:2rem">
+            <div class="step-number">✓</div>
+            <div class="step-content">
+              <h4>🔍 Verificación: Sustituir t* en T(t)</h4>
+              <p>Comprobamos que el tiempo obtenido efectivamente da la temperatura deseada:</p>
+              <div class="step-eq">
+                \[
+                  T(t^*) = T_m + (T_0 - T_m)\,e^{-k \cdot t^*}
+                  = T_m + (T_0 - T_m) \cdot \frac{T^* - T_m}{T_0 - T_m}
+                  = T_m + (T^* - T_m)
+                  = T^* \checkmark
+                \]
+              </div>
+              <p style="margin-top:0.75rem;color:var(--neon-teal);font-size:0.85rem">
+                ✅ La solución es consistente. La matemática no falla.
+              </p>
+            </div>
+          </div>
+
+          <!-- CTA para ir a la simulación -->
+          <div style="text-align:center;margin-top:2.5rem">
+            <button class="btn btn-outline" data-tab="tab-simulacion"
+                    onclick="document.querySelector('[data-tab=tab-simulacion]').click()">
+              🔄 Cambiar parámetros y recalcular
+            </button>
+          </div>
+
+        </div>
+      </div><!-- /tab-resultado -->
+
+    </div><!-- /tabs-section-inner -->
+  </section><!-- /tabs-section -->
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       FOOTER
+       ════════════════════════════════════════════════════════════ -->
+  <footer class="site-footer">
+    <p class="footer-text">
+      Desarrollado con 🍜 y ecuaciones diferenciales ·
+      <strong>Ley del Enfriamiento de Newton</strong> ·
+      Flask + Chart.js + MathJax
+    </p>
+    <p class="footer-eq">
+      T(t) = Tₘ + (T₀ − Tₘ)·e^(−kt) · t* = (1/k)·ln((T₀−Tₘ)/(T*−Tₘ))
+    </p>
+  </footer>
+
+
+  <!-- ── JavaScript principal ──────────────────────────────────── -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+  <!-- Script inline para sincronizar resultado con tab-resultado -->
+  <script>
+    // Actualiza el storytelling del tab "¿Cuándo Comer?" cuando cambia el slider
+    document.getElementById('slider-t-ideal')?.addEventListener('input', function() {
+      const el = document.getElementById('story-t-ideal');
+      if (el) el.textContent = this.value + '°C';
+      const el2 = document.getElementById('result-ideal-temp');
+      if (el2) el2.textContent = this.value + '°C';
+    });
+
+    // Sincronizar T0 con el badge del hero
+    document.getElementById('slider-t0')?.addEventListener('input', function() {
+      const badge = document.getElementById('badge-live-temp');
+      if (badge) badge.textContent = this.value + '°C';
+    });
+  </script>
+
+</body>
+</html>
